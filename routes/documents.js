@@ -19,6 +19,8 @@ router.post('/analyze', async (req, res) => {
     const { fileUrl } = req.body;
     const ocrText = await processOcr(fileUrl);
     const fields = await analyzeWithGroq(ocrText);
+    fields.file_url = fileUrl;
+    fields.file_type = 'image';
     const saved = await saveDocument(fields, req);
     res.json({ success: true, data: saved });
   } catch (e) {
