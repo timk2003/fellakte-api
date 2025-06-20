@@ -1,5 +1,5 @@
 const chalk = require('chalk');
-const { supabase } = require('../services/supabase');
+const { supabaseAdmin } = require('../services/supabase');
 const { getPresignedUrl } = require('../services/r2');
 const fetch = require('node-fetch');
 
@@ -7,7 +7,7 @@ async function checkSupabase() {
   process.stdout.write('📡 Verbinde mit Supabase...');
   try {
     // Ping: Hole 1 Dokument (oder leere Tabelle)
-    const { error } = await supabase.from('documents').select('id').limit(1);
+    const { error } = await supabaseAdmin.from('documents').select('id').limit(1);
     if (error) throw error;
     process.stdout.write(chalk.green(' ✅\n'));
   } catch (e) {
