@@ -4,3 +4,24 @@ node_modules/
 .env.example
 .DS_Store
 .vscode/
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS/Editor
+Thumbs.db
+.idea/
+*.swp
+
+# Build/Dist
+/dist/
+/build/
+coverage/
+
+# Sonstiges
+*.tgz
+*.bak
+*.tmp
