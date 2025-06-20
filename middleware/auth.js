@@ -1,11 +1,15 @@
 const { supabaseAdmin, getUserClient } = require('../services/supabase');
 
 async function jwtAuth(req, res, next) {
+  // 👇 CORS-Preflight immer durchlassen!
+  if (req.method === 'OPTIONS') return next();
+
   const auth = req.headers.authorization;
   console.log('Authorization Header:', req.headers.authorization);
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({ success: false, message: 'Kein Token' });
   }
+
   const token = auth.split(' ')[1];
   console.log('Token:', token);
   try {
@@ -23,4 +27,4 @@ async function jwtAuth(req, res, next) {
   }
 }
 
-module.exports = { jwtAuth }; 
+module.exports = { jwtAuth };
