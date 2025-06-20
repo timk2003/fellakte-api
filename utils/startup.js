@@ -39,7 +39,7 @@ async function checkGroq() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'mixtral-8x7b-32768',
+        model: 'compound-beta',
         messages: [
           { role: 'user', content: 'Antworte nur mit {"hello":"world"}.' },
         ],

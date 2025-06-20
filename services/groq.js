@@ -26,7 +26,7 @@ Antworte ausschließlich mit einem JSON-Objekt, z.B.:
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'mixtral-8x7b-32768',
+      model: 'compound-beta',
       messages: [
         { role: 'system', content: 'Du bist ein hilfreicher Assistent für Tierdokumente.' },
         { role: 'user', content: prompt },
