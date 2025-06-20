@@ -1,4 +1,4 @@
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
 const r2 = new S3Client({
@@ -21,4 +21,12 @@ async function getPresignedUrl(filename, mimetype) {
   return url;
 }
 
-module.exports = { r2, getPresignedUrl }; 
+async function getPresignedGetUrl(filename) {
+  const command = new GetObjectCommand({
+    Bucket: process.env.R2_BUCKET,
+    Key: filename,
+  });
+  return await getSignedUrl(r2, command, { expiresIn: 900 });
+}
+
+module.exports = { r2, getPresignedUrl, getPresignedGetUrl }; 

@@ -3,6 +3,7 @@ require('dotenv').config();
 const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
+const { getPresignedGetUrl } = require('./services/r2');
 
 const API_URL = process.env.API_URL || 'http://localhost:3000/api';
 const JWT = process.env.TEST_JWT; // Gültiges Supabase JWT
@@ -72,8 +73,11 @@ async function testAnalyze(fileUrl) {
     }
     const fileUrl = await uploadToPresignedUrl(presignedUrl, TEST_IMAGE_PATH);
 
+    // 2b. Presigned GET-URL generieren
+    const getUrl = await getPresignedGetUrl('testbild.png');
+
     // 3. Analyze-Endpoint testen
-    await testAnalyze(fileUrl);
+    await testAnalyze(getUrl);
 
     console.log('== Alle API-Tests erfolgreich abgeschlossen ==');
   } catch (e) {
