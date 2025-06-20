@@ -18,6 +18,12 @@ app.use(jwtAuth);
 // Routen
 const documentRoutes = require('./routes/documents');
 app.use('/api/documents', documentRoutes);
+const petRoutes = require('./routes/pets');
+app.use('/api/pets', petRoutes);
+const medicationRoutes = require('./routes/medications');
+app.use('/api/medications', medicationRoutes);
+const reminderRoutes = require('./routes/reminders');
+app.use('/api/reminders', reminderRoutes);
 
 const PORT = process.env.PORT || 3000;
 
