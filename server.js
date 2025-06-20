@@ -10,10 +10,17 @@ const cors = require('cors');
 const { startupAnimation } = require('./utils/startup');
 
 const app = express();
+
 app.use(cors({
   origin: ['https://app.fellakte.de'],
   credentials: true
 }));
+
+app.options('*', cors({  // 👈 notwendig für CORS Preflight
+  origin: ['https://app.fellakte.de'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Middleware (z.B. Auth)
