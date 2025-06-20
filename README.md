@@ -26,9 +26,9 @@ NodeJS Backend-API für OCR-gestützte Dokumentenanalyse (Impfpass, Rechnung etc
 ## .env Beispiel
 Siehe `.env.example` für alle nötigen Variablen.
 
-## Endpunkte
-- `POST /api/documents/presigned-url` – Presigned URL für Upload generieren
-- `POST /api/documents/analyze` – OCR & KI-Analyse starten
+---
+
+# API Dokumentation
 
 ## Authentifizierung
 - **Jeder API-Request erfordert ein gültiges Supabase JWT!**
@@ -38,10 +38,103 @@ Siehe `.env.example` für alle nötigen Variablen.
   ```
 - Die user_id wird automatisch aus dem Token gezogen und für alle Datenbankoperationen verwendet.
 
+---
+
+## Endpunkte
+
+### 1. Presigned URL für Upload generieren
+**POST** `/api/documents/presigned-url`
+
+Erstellt eine temporäre Upload-URL für Cloudflare R2.
+
+**Request Body:**
+```json
+{
+  "filename": "mein_dokument.jpg",
+  "mimetype": "image/jpeg"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "url": "https://...r2.cloudflarestorage.com/..."
+}
+```
+
+**Fehlerfall:**
+```json
+{
+  "success": false,
+  "message": "Fehlerbeschreibung"
+}
+```
+
+---
+
+### 2. Dokument analysieren & speichern
+**POST** `/api/documents/analyze`
+
+Analysiert ein Bild (OCR), extrahiert strukturierte Felder per KI und speichert das Ergebnis als Dokument.
+
+**Request Body:**
+```json
+{
+  "fileUrl": "https://...r2.cloudflarestorage.com/mein_dokument.jpg"
+}
+```
+
+**Response (Beispiel):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 123,
+    "user_id": "...",
+    "pet_id": 42,
+    "title": "Impfpass",
+    "description": "",
+    "file_url": "https://...",
+    "file_type": "image",
+    "category": "vaccination",
+    "name": "Bello",
+    "created_at": "2024-06-01T12:00:00Z"
+  }
+}
+```
+
+**Fehlerfall:**
+```json
+{
+  "success": false,
+  "message": "Fehlerbeschreibung"
+}
+```
+
+---
+
+## Response-Format
+Alle Endpunkte geben folgendes JSON-Format zurück:
+- `success`: (boolean) Erfolg der Anfrage
+- `message`: (string, optional) Fehler- oder Statusnachricht
+- `data`: (object, optional) Ergebnisdaten
+
+---
+
 ## Automatische Zuordnung zu Haustieren
 - Die API sucht anhand des von der KI extrahierten Tiernamens (`tiername`) und der user_id automatisch das passende Haustier (`pet_id`) in der Datenbank.
 - Wird kein passendes Haustier gefunden, bleibt pet_id leer (optional: automatisches Anlegen möglich).
 
+---
+
+## Fehlerbehandlung
+- Fehler werden immer als JSON mit `success: false` und einer `message` zurückgegeben.
+- HTTP-Statuscodes werden passend gesetzt (z.B. 401 für Auth-Fehler, 500 für Serverfehler).
+
+---
+
 ## Hinweise
 - Die eigentliche Logik für R2, OCR, Groq und Supabase ist als Platzhalter vorbereitet und muss mit echten API-Keys/Implementierungen ergänzt werden.
-- Authentifizierung via Supabase JWT ist als Middleware vorgesehen. 
+- Authentifizierung via Supabase JWT ist als Middleware vorgesehen.
+- Die API ist modular aufgebaut und kann leicht um weitere Endpunkte (z.B. für Medikamente, Erinnerungen, Haustierdaten) erweitert werden. 
