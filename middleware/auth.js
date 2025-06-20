@@ -1,8 +1,9 @@
 const { supabaseAdmin, getUserClient } = require('../services/supabase');
 
 async function jwtAuth(req, res, next) {
-  // 👇 CORS-Preflight immer durchlassen!
-  if (req.method === 'OPTIONS') return next();
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204); // Preflight immer durchlassen!
+  }
 
   const auth = req.headers.authorization;
   console.log('Authorization Header:', req.headers.authorization);

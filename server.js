@@ -16,7 +16,7 @@ app.use(cors({
   credentials: true
 }));
 
-app.options('*', cors({  // 👈 notwendig für CORS Preflight
+app.options('*', cors({
   origin: ['https://app.fellakte.de'],
   credentials: true
 }));
