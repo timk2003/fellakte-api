@@ -6,10 +6,34 @@ const path = require('path');
 const { getPresignedGetUrl } = require('./services/r2');
 
 const API_URL = process.env.API_URL || 'http://localhost:3000/api';
-const JWT = process.env.TEST_JWT; // Gültiges Supabase JWT
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+const TEST_EMAIL = process.env.TEST_EMAIL;
+const TEST_PASSWORD = process.env.TEST_PASSWORD;
 const TEST_IMAGE_PATH = process.env.TEST_IMAGE_PATH || path.join(__dirname, 'testbild.png');
 
-async function testPresignedUrl() {
+async function loginAndGetJWT() {
+  console.log('== Supabase Login ==');
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email: TEST_EMAIL,
+      password: TEST_PASSWORD,
+    })
+  });
+  const data = await res.json();
+  if (!res.ok || !data.access_token) {
+    throw new Error('Login fehlgeschlagen: ' + (data.error_description || JSON.stringify(data)));
+  }
+  console.log('Login erfolgreich!');
+  return data.access_token;
+}
+
+async function testPresignedUrl(JWT) {
   console.log('== Presigned URL Test ==');
   const res = await fetch(`${API_URL}/documents/presigned-url`, {
     method: 'POST',
@@ -44,7 +68,7 @@ async function uploadToPresignedUrl(url, filePath) {
   return url.split('?')[0];
 }
 
-async function testAnalyze(fileUrl) {
+async function testAnalyze(fileUrl, JWT) {
   console.log('== Analyze Test ==');
   const res = await fetch(`${API_URL}/documents/analyze`, {
     method: 'POST',
@@ -64,8 +88,11 @@ async function testAnalyze(fileUrl) {
 
 (async () => {
   try {
+    // 0. Login und JWT holen
+    const JWT = await loginAndGetJWT();
+
     // 1. Presigned URL generieren
-    const presignedUrl = await testPresignedUrl();
+    const presignedUrl = await testPresignedUrl(JWT);
 
     // 2. Testbild hochladen
     if (!fs.existsSync(TEST_IMAGE_PATH)) {
@@ -77,7 +104,7 @@ async function testAnalyze(fileUrl) {
     const getUrl = await getPresignedGetUrl('testbild.png');
 
     // 3. Analyze-Endpoint testen
-    await testAnalyze(getUrl);
+    await testAnalyze(getUrl, JWT);
 
     console.log('== Alle API-Tests erfolgreich abgeschlossen ==');
   } catch (e) {
