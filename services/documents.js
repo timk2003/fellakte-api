@@ -50,6 +50,8 @@ async function saveDocument(fields, req) {
     name: fields.name || fields.tiername,
     // weitere Felder nach Bedarf
   };
+  console.log('req.user:', req.user);
+  console.log('Insert-Objekt:', docData);
   return await insertDocument(docData);
 }
 
