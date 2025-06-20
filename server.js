@@ -4,11 +4,16 @@ const express = require('express');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const path = require('path');
+const cors = require('cors');
 
 // Utils
 const { startupAnimation } = require('./utils/startup');
 
 const app = express();
+app.use(cors({
+  origin: ['https://app.fellakte.de'],
+  credentials: true
+}));
 app.use(express.json());
 
 // Middleware (z.B. Auth)
