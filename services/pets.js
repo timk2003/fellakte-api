@@ -30,4 +30,16 @@ async function getOwnPets(req) {
   return data;
 }
 
-module.exports = { savePet, getOwnPets }; 
+async function deletePet(id, req) {
+  const supabase = req.userClient;
+  const userId = req.user?.id;
+  if (!userId) throw new Error('Kein user_id im Request');
+  const { error } = await supabase
+    .from('pets')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId);
+  if (error) throw new Error(error.message);
+}
+
+module.exports = { savePet, getOwnPets, deletePet }; 

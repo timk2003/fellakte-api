@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { savePet, getOwnPets } = require('../services/pets');
+const { savePet, getOwnPets, deletePet } = require('../services/pets');
 const { petSchema } = require('../validation/pet');
 
 // Haustier anlegen
@@ -65,6 +65,16 @@ router.get('/:id/next-birthday', async (req, res) => {
       nextBirthday.setFullYear(now.getFullYear() + 1);
     }
     res.json({ success: true, data: { next_birthday: nextBirthday.toISOString().split('T')[0] } });
+  } catch (e) {
+    res.status(400).json({ success: false, message: e.message });
+  }
+});
+
+// Haustier löschen
+router.delete('/:id', async (req, res) => {
+  try {
+    await deletePet(req.params.id, req);
+    res.json({ success: true });
   } catch (e) {
     res.status(400).json({ success: false, message: e.message });
   }
