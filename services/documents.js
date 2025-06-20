@@ -2,10 +2,10 @@
 
 const { processOcr: tesseractOcr } = require('./ocr');
 const { insertDocument, supabase } = require('./supabase');
+const { getPresignedUrl: getR2PresignedUrl } = require('./r2');
 
 async function getPresignedUrl(filename, mimetype) {
-  // TODO: R2 Presigned URL generieren
-  return 'https://r2-presigned-url.example';
+  return await getR2PresignedUrl(filename, mimetype);
 }
 
 async function processOcr(fileUrl) {
