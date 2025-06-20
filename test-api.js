@@ -12,6 +12,10 @@ const TEST_EMAIL = process.env.TEST_EMAIL;
 const TEST_PASSWORD = process.env.TEST_PASSWORD;
 const TEST_IMAGE_PATH = process.env.TEST_IMAGE_PATH || path.join(__dirname, 'testbild.png');
 
+let createdPetId = null;
+let createdMedicationId = null;
+let createdReminderId = null;
+
 async function loginAndGetJWT() {
   console.log('== Supabase Login ==');
   const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
@@ -186,19 +190,56 @@ async function testGetPets(JWT) {
   return data.data;
 }
 
+async function cleanup(JWT) {
+  console.log('== Cleanup: Testdaten löschen ==');
+  // Erinnerung löschen
+  if (createdReminderId) {
+    try {
+      const res = await fetch(`${API_URL}/reminders/${createdReminderId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${JWT}` }
+      });
+      const data = await res.json();
+      console.log('Erinnerung gelöscht:', data.success);
+    } catch (e) { console.log('Fehler beim Löschen der Erinnerung:', e.message); }
+  }
+  // Medikation löschen
+  if (createdMedicationId) {
+    try {
+      const res = await fetch(`${API_URL}/medications/${createdMedicationId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${JWT}` }
+      });
+      const data = await res.json();
+      console.log('Medikation gelöscht:', data.success);
+    } catch (e) { console.log('Fehler beim Löschen der Medikation:', e.message); }
+  }
+  // Haustier löschen
+  if (createdPetId) {
+    try {
+      const res = await fetch(`${API_URL}/pets/${createdPetId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${JWT}` }
+      });
+      const data = await res.json();
+      console.log('Haustier gelöscht:', data.success);
+    } catch (e) { console.log('Fehler beim Löschen des Haustiers:', e.message); }
+  }
+}
+
 (async () => {
   try {
     // 0. Login und JWT holen
     const JWT = await loginAndGetJWT();
 
     // Haustier anlegen
-    const petId = await testCreatePet(JWT);
+    createdPetId = await testCreatePet(JWT);
 
     // Medikation anlegen
-    const medicationId = await testCreateMedication(JWT, petId);
+    createdMedicationId = await testCreateMedication(JWT, createdPetId);
 
     // Erinnerung anlegen
-    await testCreateReminder(JWT, petId, medicationId);
+    createdReminderId = await testCreateReminder(JWT, createdPetId, createdMedicationId);
 
     // Eigene Haustiere abfragen
     await testGetPets(JWT);
@@ -217,6 +258,9 @@ async function testGetPets(JWT) {
 
     // 3. Analyze-Endpoint testen
     await testAnalyze(getUrl, JWT);
+
+    // Cleanup am Ende
+    await cleanup(JWT);
 
     console.log('== Alle API-Tests erfolgreich abgeschlossen ==');
   } catch (e) {

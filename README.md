@@ -114,6 +114,34 @@ Analysiert ein Bild (OCR), extrahiert strukturierte Felder per KI und speichert 
 
 ---
 
+### 3. Alter eines Haustiers berechnen
+**GET** `/api/pets/:id/age`
+
+Berechnet das Alter des Haustiers in Jahren.
+
+**Response (Beispiel):**
+```json
+{
+  "success": true,
+  "data": { "age": 4 }
+}
+```
+
+### 4. Nächsten Geburtstag eines Haustiers berechnen
+**GET** `/api/pets/:id/next-birthday`
+
+Gibt das Datum des nächsten Geburtstags des Haustiers zurück.
+
+**Response (Beispiel):**
+```json
+{
+  "success": true,
+  "data": { "next_birthday": "2024-09-01" }
+}
+```
+
+---
+
 ## Response-Format
 Alle Endpunkte geben folgendes JSON-Format zurück:
 - `success`: (boolean) Erfolg der Anfrage

@@ -21,4 +21,45 @@ async function saveMedication(fields, req) {
   return data;
 }
 
-module.exports = { saveMedication }; 
+async function getOwnMedications(req) {
+  const supabase = req.userClient;
+  const userId = req.user?.id;
+  if (!userId) throw new Error('Kein user_id im Request');
+  const { data, error } = await supabase.from('medications').select('*').eq('user_id', userId);
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+async function updateMedication(id, fields, req) {
+  const supabase = req.userClient;
+  const userId = req.user?.id;
+  if (!userId) throw new Error('Kein user_id im Request');
+  const { data, error } = await supabase
+    .from('medications')
+    .update(fields)
+    .eq('id', id)
+    .eq('user_id', userId)
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+async function deleteMedication(id, req) {
+  const supabase = req.userClient;
+  const userId = req.user?.id;
+  if (!userId) throw new Error('Kein user_id im Request');
+  const { error } = await supabase
+    .from('medications')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId);
+  if (error) throw new Error(error.message);
+}
+
+module.exports = {
+  saveMedication,
+  getOwnMedications,
+  updateMedication,
+  deleteMedication,
+}; 

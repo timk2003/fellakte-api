@@ -22,4 +22,45 @@ async function saveReminder(fields, req) {
   return data;
 }
 
-module.exports = { saveReminder }; 
+async function getOwnReminders(req) {
+  const supabase = req.userClient;
+  const userId = req.user?.id;
+  if (!userId) throw new Error('Kein user_id im Request');
+  const { data, error } = await supabase.from('reminders').select('*').eq('user_id', userId);
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+async function updateReminder(id, fields, req) {
+  const supabase = req.userClient;
+  const userId = req.user?.id;
+  if (!userId) throw new Error('Kein user_id im Request');
+  const { data, error } = await supabase
+    .from('reminders')
+    .update(fields)
+    .eq('id', id)
+    .eq('user_id', userId)
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+async function deleteReminder(id, req) {
+  const supabase = req.userClient;
+  const userId = req.user?.id;
+  if (!userId) throw new Error('Kein user_id im Request');
+  const { error } = await supabase
+    .from('reminders')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId);
+  if (error) throw new Error(error.message);
+}
+
+module.exports = {
+  saveReminder,
+  getOwnReminders,
+  updateReminder,
+  deleteReminder,
+}; 
