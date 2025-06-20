@@ -86,10 +86,122 @@ async function testAnalyze(fileUrl, JWT) {
   return data;
 }
 
+async function testCreatePet(JWT) {
+  console.log('== Haustier anlegen ==');
+  const res = await fetch(`${API_URL}/pets`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${JWT}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: 'Bello',
+      species: 'dog',
+      breed: 'Labrador',
+      birth_date: '2020-01-01',
+      gender: 'male',
+      color: 'schwarz',
+      weight: 25,
+      microchip: '1234567890',
+      notes: 'Testhund',
+      last_vaccination: '2024-01-01',
+      avatar_url: null
+    })
+  });
+  const data = await res.json();
+  console.log(data);
+  if (!data.success) throw new Error('Haustier anlegen fehlgeschlagen: ' + data.message);
+  return data.data.id;
+}
+
+async function testCreateMedication(JWT, petId) {
+  console.log('== Medikation anlegen ==');
+  const res = await fetch(`${API_URL}/medications`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${JWT}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      pet_id: petId,
+      name: 'Antibiotikum',
+      dosage: '1 Tablette',
+      frequency: 'daily',
+      start_date: '2024-06-20',
+      end_date: '2024-06-27',
+      notes: 'Mit Futter geben',
+      reminder: true,
+      reminder_times: ['morning'],
+      status: 'active',
+      therapy_type: 'medication'
+    })
+  });
+  const data = await res.json();
+  console.log(data);
+  if (!data.success) throw new Error('Medikation anlegen fehlgeschlagen: ' + data.message);
+  return data.data.id;
+}
+
+async function testCreateReminder(JWT, petId, medicationId) {
+  console.log('== Erinnerung anlegen ==');
+  const res = await fetch(`${API_URL}/reminders`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${JWT}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      pet_id: petId,
+      title: 'Medikamentengabe',
+      description: 'Antibiotikum geben',
+      reminder_date: '2024-06-21',
+      reminder_time: '08:00',
+      reminder_type: 'medication',
+      reminder_frequency: 'daily',
+      reminder_times: ['morning'],
+      status: 'pending',
+      email_notification: true,
+      sms_notification: false,
+      medication_id: medicationId
+    })
+  });
+  const data = await res.json();
+  console.log(data);
+  if (!data.success) throw new Error('Erinnerung anlegen fehlgeschlagen: ' + data.message);
+  return data.data.id;
+}
+
+async function testGetPets(JWT) {
+  console.log('== Eigene Haustiere abfragen ==');
+  const res = await fetch(`${API_URL}/pets`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${JWT}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  const data = await res.json();
+  console.log(data);
+  if (!data.success) throw new Error('Haustiere abfragen fehlgeschlagen: ' + data.message);
+  return data.data;
+}
+
 (async () => {
   try {
     // 0. Login und JWT holen
     const JWT = await loginAndGetJWT();
+
+    // Haustier anlegen
+    const petId = await testCreatePet(JWT);
+
+    // Medikation anlegen
+    const medicationId = await testCreateMedication(JWT, petId);
+
+    // Erinnerung anlegen
+    await testCreateReminder(JWT, petId, medicationId);
+
+    // Eigene Haustiere abfragen
+    await testGetPets(JWT);
 
     // 1. Presigned URL generieren
     const presignedUrl = await testPresignedUrl(JWT);
