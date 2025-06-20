@@ -1,9 +1,4 @@
-const { createClient } = require('@supabase/supabase-js');
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const { supabaseAdmin, getUserClient } = require('../services/supabase');
 
 async function jwtAuth(req, res, next) {
   const auth = req.headers.authorization;
@@ -12,11 +7,13 @@ async function jwtAuth(req, res, next) {
   }
   const token = auth.split(' ')[1];
   try {
-    const { data, error } = await supabase.auth.getUser(token);
+    const { data, error } = await supabaseAdmin.auth.getUser(token);
     if (error || !data.user) {
       return res.status(401).json({ success: false, message: 'Ungültiges Token' });
     }
     req.user = data.user;
+    req.token = token;
+    req.userClient = getUserClient(token);
     next();
   } catch (e) {
     res.status(401).json({ success: false, message: 'Auth-Fehler' });

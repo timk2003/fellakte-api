@@ -22,7 +22,7 @@ async function analyzeWithGroq(ocrText) {
   };
 }
 
-async function findPetIdByName(userId, petName) {
+async function findPetIdByName(userId, petName, supabase) {
   if (!petName) return null;
   const { data, error } = await supabase
     .from('pets')
@@ -35,9 +35,10 @@ async function findPetIdByName(userId, petName) {
 }
 
 async function saveDocument(fields, req) {
+  const supabase = req.userClient;
   const userId = req.user?.id;
   if (!userId) throw new Error('Kein user_id im Request');
-  const petId = await findPetIdByName(userId, fields.tiername);
+  const petId = await findPetIdByName(userId, fields.tiername, supabase);
   if (!fields.file_url) throw new Error('file_url fehlt!');
   const docData = {
     user_id: userId,
@@ -53,7 +54,9 @@ async function saveDocument(fields, req) {
   if (fields.file_path) docData.file_path = fields.file_path;
   console.log('req.user:', req.user);
   console.log('Insert-Objekt:', docData);
-  return await insertDocument(docData);
+  const { data, error } = await supabase.from('documents').insert([docData]).select().single();
+  if (error) throw new Error(error.message);
+  return data;
 }
 
 module.exports = {
