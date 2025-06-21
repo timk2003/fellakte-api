@@ -12,14 +12,12 @@ const { startupAnimation } = require('./utils/startup');
 const app = express();
 
 app.use(cors({
-  origin: ['https://app.fellakte.de'],
+  origin: ['https://app.fellakte.de', 'http://localhost:5173'],
   credentials: true
 }));
 
-app.options('*', cors({
-  origin: ['https://app.fellakte.de'],
-  credentials: true
-}));
+// Preflight-Requests für alle Routen abfangen
+app.options('*', cors());
 
 app.use(express.json());
 

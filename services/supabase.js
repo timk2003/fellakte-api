@@ -6,6 +6,12 @@ const supabaseAdmin = createClient(
 );
 
 function getUserClient(token) {
+  if (!token) {
+    // Verhindert Absturz, wenn kein Token vorhanden ist.
+    // Gibt einen "toten" Client zurück, der bei Benutzung Fehler wirft,
+    // anstatt den Server abstürzen zu lassen.
+    return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+  }
   return createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_ANON_KEY,
