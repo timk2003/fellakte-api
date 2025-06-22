@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { getPresignedGetUrl } = require('./services/r2');
 
-const API_URL = process.env.API_URL || 'http://localhost:3000/api';
+const API_URL = process.env.API_URL || 'http://127.0.0.1:3000/api';
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const TEST_EMAIL = process.env.TEST_EMAIL;

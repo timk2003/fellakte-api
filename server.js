@@ -45,7 +45,7 @@ figlet('fellakte-api', (err, data) => {
   }
   startupAnimation()
     .then(() => {
-      app.listen(PORT, '0.0.0.0', () => {
+      app.listen(PORT, () => {
         console.log(chalk.green(`\n🚀 Server läuft auf Port ${PORT} und ist von außen erreichbar.`));
       });
     })
