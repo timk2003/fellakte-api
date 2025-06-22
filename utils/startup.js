@@ -50,7 +50,7 @@ async function checkGroq() {
     if (!response.ok) throw new Error('Groq API nicht erreichbar');
     const data = await response.json();
     if (!data.choices?.[0]?.message?.content.includes('hello')) throw new Error('Groq Antwort unerwartet');
-    process.stdout.write(chalk.green(' ✅\n'));
+  process.stdout.write(chalk.green(' ✅\n'));
   } catch (e) {
     process.stdout.write(chalk.red(' ❌\n'));
     throw new Error('Groq-Check fehlgeschlagen: ' + e.message);
