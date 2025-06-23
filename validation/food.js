@@ -21,6 +21,8 @@ const foodAnalysisSchema = z.object({
   activity_level: z.string().optional(),
   special_needs: z.array(z.string()).optional(),
   allergies: z.array(z.string()).optional(),
+  is_current_food: z.boolean().optional(),
+  food_price: z.number().optional(),
 });
 
 function validateFoodAnalysis(req, res, next) {

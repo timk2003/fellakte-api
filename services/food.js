@@ -28,26 +28,36 @@ async function analyzeFood(data, user) {
   });
 
   // Prompt für KI bauen
-  const prompt = `Analysiere das folgende Futter für das Tier und gib Empfehlungen, Warnungen und Alternativen:
-
-Tierdaten: ${JSON.stringify(petData, null, 2)}
-Futterdaten: ${JSON.stringify(data.food, null, 2)}
-Besondere Hinweise: ${data.user_notes || '-'}
-
-Bitte gib die Analyse im folgenden JSON-Format zurück:
-{
-  "calories_per_day": ...,
-  "protein_g": ...,
-  "fat_g": ...,
-  "carbs_g": ...,
-  "recommendations": [ ... ]
-}`;
+  let prompt;
+  if (data.is_current_food) {
+    prompt = `Das folgende Futter ist das aktuelle Futter des Tieres. Analysiere es und gib Empfehlungen zur Optimierung, z.B. Menge, Zusammensetzung, Preis-Leistung, Alternativen. Antworte ausschließlich mit einem gültigen JSON-Objekt, ohne jeglichen Text davor oder danach.\n\nTierdaten: ${JSON.stringify(petData, null, 2)}\nFutterdaten: ${JSON.stringify(data.food, null, 2)}${data.food_price ? `\nPreis: ${data.food_price} EUR` : ''}\nBesondere Hinweise: ${data.user_notes || '-'}\n\nBitte gib die Analyse im folgenden JSON-Format zurück:\n{\n  "calories_per_day": ...,\n  "protein_g": ...,\n  "fat_g": ...,\n  "carbs_g": ...,\n  "recommendations": [ ... ]\n}`;
+  } else {
+    prompt = `Das folgende Futter ist ein neues/alternatives Futter für das Tier. Analysiere die Eignung und vergleiche es ggf. mit dem aktuellen Futter, falls bekannt. Antworte ausschließlich mit einem gültigen JSON-Objekt, ohne jeglichen Text davor oder danach.\n\nTierdaten: ${JSON.stringify(petData, null, 2)}\nFutterdaten: ${JSON.stringify(data.food, null, 2)}${data.food_price ? `\nPreis: ${data.food_price} EUR` : ''}\nBesondere Hinweise: ${data.user_notes || '-'}\n\nBitte gib die Analyse im folgenden JSON-Format zurück:\n{\n  "calories_per_day": ...,\n  "protein_g": ...,\n  "fat_g": ...,\n  "carbs_g": ...,\n  "recommendations": [ ... ]\n}`;
+  }
 
   // KI-Analyse (Groq/OpenAI)
   const analysis = await analyzeWithGroq(prompt);
 
-  // Optional: Ergebnis speichern (z.B. in Tabelle food_analyses)
-  // await supabase.from('food_analyses').insert({ user_id: user.id, pet_id: petData.id, ... });
+  // Wenn aktuelles Futter: Speichere Futterdaten im Tierprofil
+  if (data.is_current_food && data.pet_id) {
+    const updateFields = {
+      food_brand: data.food.brand,
+      food_type: data.food.type,
+      food_amount_per_day_g: data.food.amount_per_day_g,
+      food_price: data.food_price || null,
+      food_nutrition: {
+        calories_per_day: analysis.calories_per_day,
+        protein_g: analysis.protein_g,
+        fat_g: analysis.fat_g,
+        carbs_g: analysis.carbs_g
+      }
+    };
+    await supabase
+      .from('pets')
+      .update(updateFields)
+      .eq('id', data.pet_id)
+      .eq('user_id', user.id);
+  }
 
   return analysis;
 }
