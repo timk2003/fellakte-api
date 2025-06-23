@@ -34,6 +34,8 @@ const medicationRoutes = require('./routes/medications');
 app.use('/api/medications', medicationRoutes);
 const reminderRoutes = require('./routes/reminders');
 app.use('/api/reminders', reminderRoutes);
+const foodRoutes = require('./routes/food');
+app.use('/api/food', foodRoutes);
 
 const PORT = process.env.PORT || 3000;
 

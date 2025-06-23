@@ -3,22 +3,7 @@
 
 const fetch = require('node-fetch');
 
-async function analyzeWithGroq(ocrText) {
-  const prompt = `Extrahiere aus folgendem Text die Felder als kompaktes JSON:
-- tiername
-- impfstoff
-- datum
-- arzt
-- art_des_dokuments
-
-Text:
-"""
-${ocrText}
-"""
-
-Antworte ausschließlich mit einem JSON-Objekt, z.B.:
-{"tiername":"Bello","impfstoff":"Nobivac SHPPiL","datum":"2024-01-01","arzt":"Dr. Müller","art_des_dokuments":"Impfpass"}`;
-
+async function analyzeWithGroq(prompt) {
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -28,10 +13,10 @@ Antworte ausschließlich mit einem JSON-Objekt, z.B.:
     body: JSON.stringify({
       model: 'compound-beta',
       messages: [
-        { role: 'system', content: 'Du bist ein hilfreicher Assistent für Tierdokumente.' },
+        { role: 'system', content: 'Du bist ein hilfreicher Assistent für Tiergesundheit und Futteranalyse.' },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 400,
+      max_tokens: 600,
       temperature: 0.2,
     }),
   });
