@@ -24,10 +24,14 @@ async function analyzeWithGroq(prompt) {
   if (!response.ok) throw new Error('Groq API Fehler');
   const data = await response.json();
   const content = data.choices?.[0]?.message?.content;
+
+  // Logge die KI-Antwort IMMER!
+  console.log('Groq-Antwort:', content);
+
   try {
     return JSON.parse(content);
   } catch (e) {
-    throw new Error('Groq Antwort konnte nicht als JSON geparst werden');
+    throw new Error('Groq Antwort konnte nicht als JSON geparst werden. Antwort war: ' + content);
   }
 }
 
