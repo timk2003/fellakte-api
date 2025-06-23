@@ -28,8 +28,15 @@ async function analyzeWithGroq(prompt) {
   // Logge die KI-Antwort IMMER!
   console.log('Groq-Antwort:', content);
 
+  // Extrahiere das JSON-Objekt aus der Antwort
+  let jsonString = content;
+  const match = content.match(/{[\s\S]*}/);
+  if (match) {
+    jsonString = match[0];
+  }
+
   try {
-    return JSON.parse(content);
+    return JSON.parse(jsonString);
   } catch (e) {
     throw new Error('Groq Antwort konnte nicht als JSON geparst werden. Antwort war: ' + content);
   }
