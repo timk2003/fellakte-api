@@ -1,22 +1,14 @@
-const { getPetById } = require('./pets');
+const { getFirestore } = require('firebase-admin/firestore');
+const db = getFirestore();
 const { analyzeWithGroq } = require('./groq');
-const { createClient } = require('@supabase/supabase-js');
-const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 async function analyzeFood(data, user) {
   let petData = data.pet_data;
   if (!petData && data.pet_id) {
-    // Tierdaten aus DB holen
-    const { data: pet, error } = await supabase
-      .from('pets')
-      .select('*')
-      .eq('id', data.pet_id)
-      .eq('user_id', user.id)
-      .single();
-    if (error || !pet) throw new Error('Tier nicht gefunden');
-    petData = pet;
+    // Tierdaten aus Firestore holen
+    const petDoc = await db.collection('users').doc(user.id).collection('pets').doc(data.pet_id).get();
+    if (!petDoc.exists) throw new Error('Tier nicht gefunden');
+    petData = petDoc.data();
   }
   if (!petData) throw new Error('Tierdaten fehlen');
 
@@ -46,17 +38,13 @@ async function analyzeFood(data, user) {
       food_amount_per_day_g: data.food.amount_per_day_g,
       food_price: data.food_price || null,
       food_nutrition: {
-        calories_per_day: analysis.calories_per_day,
-        protein_g: analysis.protein_g,
-        fat_g: analysis.fat_g,
-        carbs_g: analysis.carbs_g
+        calories_per_day: data.calories_per_day,
+        protein_g: data.protein_g,
+        fat_g: data.fat_g,
+        carbs_g: data.carbs_g
       }
     };
-    await supabase
-      .from('pets')
-      .update(updateFields)
-      .eq('id', data.pet_id)
-      .eq('user_id', user.id);
+    await db.collection('users').doc(user.id).collection('pets').doc(data.pet_id).set(updateFields, { merge: true });
   }
 
   return analysis;

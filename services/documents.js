@@ -1,67 +1,56 @@
 // services/documents.js
 
-const { processOcr: tesseractOcr } = require('./ocr');
-const { insertDocument, supabase } = require('./supabase');
-const { getPresignedUrl: getR2PresignedUrl } = require('./r2');
+const { getFirestore } = require('firebase-admin/firestore');
+const db = getFirestore();
 
-async function getPresignedUrl(filename, mimetype) {
-  return await getR2PresignedUrl(filename, mimetype);
-}
-
-async function processOcr(fileUrl) {
-  return await tesseractOcr(fileUrl);
-}
-
-async function analyzeWithGroq(ocrText) {
-  // TODO: Groq AI aufrufen und strukturierte Felder extrahieren
-  return {
-    impfstoff: 'Beispiel Impfstoff',
-    datum: '2024-01-01',
-    tiername: 'Bello',
-    tierart: 'Hund',
-  };
-}
-
-async function findPetIdByName(userId, petName, supabase) {
-  if (!petName) return null;
-  const { data, error } = await supabase
-    .from('pets')
-    .select('id')
-    .eq('user_id', userId)
-    .ilike('name', petName)
-    .single();
-  if (error) return null;
-  return data?.id;
-}
-
+/**
+ * Speichert ein Dokument als Subdokument unter users/{USER_ID}/pets/{PET_ID}/documents
+ * @param {Object} fields
+ * @param {Object} req
+ * @returns {Promise<Object>} Das gespeicherte Dokument
+ */
 async function saveDocument(fields, req) {
-  const supabase = req.userClient;
   const userId = req.user?.id;
+  const petId = fields.pet_id;
   if (!userId) throw new Error('Kein user_id im Request');
-  const petId = await findPetIdByName(userId, fields.tiername, supabase);
-  if (!fields.file_url) throw new Error('file_url fehlt!');
+  if (!petId) throw new Error('Kein pet_id im Request');
   const docData = {
-    user_id: userId,
-    pet_id: petId,
-    title: fields.title || fields.art_des_dokuments || 'Dokument',
+    title: fields.title || 'Dokument',
     description: fields.description || '',
     file_url: fields.file_url,
     file_type: fields.file_type || 'image',
-    category: fields.category || fields.art_des_dokuments || 'other',
-    name: fields.name || fields.tiername,
+    category: fields.category || 'other',
+    name: fields.name || null,
+    file_path: fields.file_path || null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     // weitere Felder nach Bedarf
   };
-  if (fields.file_path) docData.file_path = fields.file_path;
-  console.log('req.user:', req.user);
-  console.log('Insert-Objekt:', docData);
-  const { data, error } = await supabase.from('documents').insert([docData]).select().single();
-  if (error) throw new Error(error.message);
-  return data;
+  let ref;
+  if (fields.id) {
+    // Update
+    ref = db.collection('users').doc(userId).collection('pets').doc(petId).collection('documents').doc(fields.id);
+    await ref.set(docData, { merge: true });
+  } else {
+    // Neu anlegen
+    ref = await db.collection('users').doc(userId).collection('pets').doc(petId).collection('documents').add(docData);
+  }
+  const doc = await ref.get();
+  return { id: doc.id, ...doc.data() };
 }
 
-module.exports = {
-  getPresignedUrl,
-  processOcr,
-  analyzeWithGroq,
-  saveDocument,
-}; 
+/**
+ * Gibt alle Dokumente für ein Pet zurück
+ * @param {string} petId
+ * @param {Object} req
+ * @returns {Promise<Array>} Array von Dokumenten
+ */
+async function getDocumentsByPet(petId, req) {
+  const userId = req.user?.id;
+  if (!userId) throw new Error('Kein user_id im Request');
+  if (!petId) throw new Error('Kein pet_id im Request');
+  const snapshot = await db.collection('users').doc(userId).collection('pets').doc(petId).collection('documents').get();
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+module.exports = { saveDocument, getDocumentsByPet }; 

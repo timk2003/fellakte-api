@@ -1,45 +1,65 @@
+const { getFirestore } = require('firebase-admin/firestore');
+const db = getFirestore();
+
+/**
+ * Speichert ein Haustier als Subdokument unter users/{USER_ID}/pets
+ * @param {Object} fields
+ * @param {Object} req
+ * @returns {Promise<Object>} Das gespeicherte Haustier
+ */
 async function savePet(fields, req) {
-  const supabase = req.userClient;
   const userId = req.user?.id;
   if (!userId) throw new Error('Kein user_id im Request');
   const petData = {
-    user_id: userId,
     name: fields.name,
     species: fields.species,
     breed: fields.breed,
-    birth_date: fields.birth_date,
+    birthDate: fields.birthDate,
     gender: fields.gender,
-    color: fields.color,
-    weight: fields.weight,
-    microchip: fields.microchip,
-    notes: fields.notes,
-    last_vaccination: fields.last_vaccination,
-    avatar_url: fields.avatar_url,
+    profileImagePath: fields.profileImagePath || null,
+    weight: fields.weight || null,
+    chipNumber: fields.chipNumber || null,
+    insurance: fields.insurance || null,
+    passportNumber: fields.passportNumber || null,
+    notes: fields.notes || null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
-  const { data, error } = await supabase.from('pets').insert([petData]).select().single();
-  if (error) throw new Error(error.message);
-  return data;
+  let ref;
+  if (fields.id) {
+    // Update
+    ref = db.collection('users').doc(userId).collection('pets').doc(fields.id);
+    await ref.set(petData, { merge: true });
+  } else {
+    // Neu anlegen
+    ref = await db.collection('users').doc(userId).collection('pets').add(petData);
+  }
+  const doc = await ref.get();
+  return { id: doc.id, ...doc.data() };
 }
 
+/**
+ * Gibt alle eigenen Haustiere des Users zurück
+ * @param {Object} req
+ * @returns {Promise<Array>} Array von Haustieren
+ */
 async function getOwnPets(req) {
-  const supabase = req.userClient;
   const userId = req.user?.id;
   if (!userId) throw new Error('Kein user_id im Request');
-  const { data, error } = await supabase.from('pets').select('*').eq('user_id', userId);
-  if (error) throw new Error(error.message);
-  return data;
+  const snapshot = await db.collection('users').doc(userId).collection('pets').get();
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
+/**
+ * Löscht ein Haustier
+ * @param {string} id
+ * @param {Object} req
+ * @returns {Promise<void>}
+ */
 async function deletePet(id, req) {
-  const supabase = req.userClient;
   const userId = req.user?.id;
   if (!userId) throw new Error('Kein user_id im Request');
-  const { error } = await supabase
-    .from('pets')
-    .delete()
-    .eq('id', id)
-    .eq('user_id', userId);
-  if (error) throw new Error(error.message);
+  await db.collection('users').doc(userId).collection('pets').doc(id).delete();
 }
 
 module.exports = { savePet, getOwnPets, deletePet }; 

@@ -1,17 +1,30 @@
-const Tesseract = require('tesseract.js');
-const fetch = require('node-fetch');
+const vision = require('@google-cloud/vision');
 
-async function processOcr(url) {
-  // Bild herunterladen
-  const response = await fetch(url);
-  if (!response.ok) throw new Error('Bild konnte nicht geladen werden');
-  const buffer = await response.buffer();
+// Google Cloud Vision Client für EU-Region
+const client = new vision.ImageAnnotatorClient({
+  apiEndpoint: 'eu-vision.googleapis.com',
+  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS, // oder process.env.GOOGLE_CLOUD_VISION_KEYFILE
+});
 
-  // OCR mit Tesseract
-  const { data: { text } } = await Tesseract.recognize(buffer, 'deu+eng', {
-    logger: () => {}, // Optional: Fortschritt
-  });
-  return text;
+/**
+ * Führt OCR auf einem Bild durch (Buffer oder Base64)
+ * @param {Buffer|string} imageBufferOrBase64
+ * @returns {Promise<string>} erkannter Text
+ */
+async function runOcr(imageBufferOrBase64) {
+  let image;
+  if (Buffer.isBuffer(imageBufferOrBase64)) {
+    image = { content: imageBufferOrBase64.toString('base64') };
+  } else if (typeof imageBufferOrBase64 === 'string') {
+    image = { content: imageBufferOrBase64 };
+  } else {
+    throw new Error('Ungültiges Bildformat');
+  }
+
+  const [result] = await client.textDetection({ image });
+  const detections = result.textAnnotations;
+  if (!detections || detections.length === 0) return '';
+  return detections[0].description;
 }
 
-module.exports = { processOcr }; 
+module.exports = { runOcr }; 

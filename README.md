@@ -1,6 +1,6 @@
 # fellakte-api
 
-NodeJS Backend-API für Tierdokumente, Haustiere, Medikamente und Erinnerungen mit OCR, Cloudflare R2, Supabase und Groq AI.
+NodeJS Backend-API für Tierdokumente, Haustiere, Medikamente und Erinnerungen mit OCR, Cloudflare R2, Firebase/Firestore und Groq AI.
 
 ---
 
@@ -8,7 +8,7 @@ NodeJS Backend-API für Tierdokumente, Haustiere, Medikamente und Erinnerungen m
 - Bild-Upload via Presigned URL (Cloudflare R2)
 - OCR-Analyse (Tesseract/Google Vision)
 - KI-gestützte Extraktion strukturierter Felder (Groq AI)
-- Speicherung in Supabase (Datenbank & Auth)
+- Speicherung in Firestore (Datenbank & Auth via Firebase)
 - Haustierverwaltung, Medikation, Erinnerungen
 - Saubere API-Struktur (routes/, services/, middleware/, utils/)
 - Ascii-Banner & Startup-Animation
@@ -31,15 +31,15 @@ NodeJS Backend-API für Tierdokumente, Haustiere, Medikamente und Erinnerungen m
 ---
 
 ## .env Beispiel
-Siehe `.env.example` für alle nötigen Variablen (Supabase, R2, Groq, Test-User etc.).
+Siehe `.env.example` für alle nötigen Variablen (Firebase, R2, Groq, Test-User etc.).
 
 ---
 
 ## Authentifizierung
-- **Jeder API-Request erfordert ein gültiges Supabase JWT!**
+- **Jeder API-Request erfordert ein gültiges Firebase JWT!**
 - Das Token muss im Header übergeben werden:
   ```
-  Authorization: Bearer <dein-jwt-token>
+  Authorization: Bearer <dein-firebase-id-token>
   ```
 - Die user_id wird automatisch aus dem Token gezogen und für alle Datenbankoperationen verwendet.
 
@@ -185,21 +185,7 @@ Siehe `.env.example` für alle nötigen Variablen (Supabase, R2, Groq, Test-User
 **Body:**
 ```json
 {
-  "fileUrl": "https://...r2.cloudflarestorage.com/mein_dokument.jpg"
-}
-```
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "...",
-    "user_id": "...",
-    "pet_id": "...",
-    "title": "Impfpass",
-    "file_url": "https://...",
-    ...
-  }
+  // ...
 }
 ```
 

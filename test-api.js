@@ -6,8 +6,6 @@ const path = require('path');
 const { getPresignedGetUrl } = require('./services/r2');
 
 const API_URL = process.env.API_URL || 'http://127.0.0.1:3000/api';
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const TEST_EMAIL = process.env.TEST_EMAIL;
 const TEST_PASSWORD = process.env.TEST_PASSWORD;
 const TEST_IMAGE_PATH = process.env.TEST_IMAGE_PATH || path.join(__dirname, 'testbild.png');
@@ -16,26 +14,27 @@ let createdPetId = null;
 let createdMedicationId = null;
 let createdReminderId = null;
 
-async function loginAndGetJWT() {
-  console.log('== Supabase Login ==');
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-    method: 'POST',
-    headers: {
-      'apikey': SUPABASE_ANON_KEY,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      email: TEST_EMAIL,
-      password: TEST_PASSWORD,
-    })
-  });
-  const data = await res.json();
-  if (!res.ok || !data.access_token) {
-    throw new Error('Login fehlgeschlagen: ' + (data.error_description || JSON.stringify(data)));
-  }
-  console.log('Login erfolgreich!');
-  return data.access_token;
-}
+// TODO: Firebase Auth-Login für Test-Token implementieren
+// async function loginAndGetJWT() {
+//   console.log('== Supabase Login ==');
+//   const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+//     method: 'POST',
+//     headers: {
+//       'apikey': SUPABASE_ANON_KEY,
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify({
+//       email: TEST_EMAIL,
+//       password: TEST_PASSWORD,
+//     })
+//   });
+//   const data = await res.json();
+//   if (!res.ok || !data.access_token) {
+//     throw new Error('Login fehlgeschlagen: ' + (data.error_description || JSON.stringify(data)));
+//   }
+//   console.log('Login erfolgreich!');
+//   return data.access_token;
+// }
 
 async function testPresignedUrl(JWT) {
   console.log('== Presigned URL Test ==');
@@ -230,22 +229,22 @@ async function cleanup(JWT) {
 (async () => {
   try {
     // 0. Login und JWT holen
-    const JWT = await loginAndGetJWT();
+    // const JWT = await loginAndGetJWT(); // Supabase-Login entfernt
 
     // Haustier anlegen
-    createdPetId = await testCreatePet(JWT);
+    createdPetId = await testCreatePet(JWT); // JWT ist jetzt nicht mehr verfügbar
 
     // Medikation anlegen
-    createdMedicationId = await testCreateMedication(JWT, createdPetId);
+    createdMedicationId = await testCreateMedication(JWT, createdPetId); // JWT ist jetzt nicht mehr verfügbar
 
     // Erinnerung anlegen
-    createdReminderId = await testCreateReminder(JWT, createdPetId, createdMedicationId);
+    createdReminderId = await testCreateReminder(JWT, createdPetId, createdMedicationId); // JWT ist jetzt nicht mehr verfügbar
 
     // Eigene Haustiere abfragen
-    await testGetPets(JWT);
+    await testGetPets(JWT); // JWT ist jetzt nicht mehr verfügbar
 
     // 1. Presigned URL generieren
-    const presignedUrl = await testPresignedUrl(JWT);
+    const presignedUrl = await testPresignedUrl(JWT); // JWT ist jetzt nicht mehr verfügbar
 
     // 2. Testbild hochladen
     if (!fs.existsSync(TEST_IMAGE_PATH)) {
@@ -257,10 +256,10 @@ async function cleanup(JWT) {
     const getUrl = await getPresignedGetUrl('testbild.png');
 
     // 3. Analyze-Endpoint testen
-    await testAnalyze(getUrl, JWT);
+    await testAnalyze(getUrl, JWT); // JWT ist jetzt nicht mehr verfügbar
 
     // Cleanup am Ende
-    await cleanup(JWT);
+    await cleanup(JWT); // JWT ist jetzt nicht mehr verfügbar
 
     console.log('== Alle API-Tests erfolgreich abgeschlossen ==');
   } catch (e) {

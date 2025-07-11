@@ -1,4 +1,4 @@
-const { supabaseAdmin, getUserClient } = require('../services/supabase');
+const { getAuth } = require('firebase-admin/auth');
 
 async function jwtAuth(req, res, next) {
   const auth = req.headers.authorization;
@@ -8,16 +8,12 @@ async function jwtAuth(req, res, next) {
 
   const token = auth.split(' ')[1];
   try {
-    const { data, error } = await supabaseAdmin.auth.getUser(token);
-    if (error || !data.user) {
-      return res.status(401).json({ success: false, message: 'Ungültiges Token' });
-    }
-    req.user = data.user;
+    const decoded = await getAuth().verifyIdToken(token);
+    req.user = { id: decoded.uid, email: decoded.email };
     req.token = token;
-    req.userClient = getUserClient(token);
     next();
   } catch (e) {
-    res.status(401).json({ success: false, message: 'Auth-Fehler' });
+    res.status(401).json({ success: false, message: 'Auth-Fehler: ' + e.message });
   }
 }
 
