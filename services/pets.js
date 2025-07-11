@@ -1,5 +1,9 @@
 const { db } = require('./firebase');
 
+function removeUndefined(obj) {
+  return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined));
+}
+
 /**
  * Speichert ein Haustier als Subdokument unter users/{USER_ID}/pets
  * @param {Object} fields
@@ -9,7 +13,7 @@ const { db } = require('./firebase');
 async function savePet(fields, req) {
   const userId = req.user?.id;
   if (!userId) throw new Error('Kein user_id im Request');
-  const petData = {
+  const petData = removeUndefined({
     name: fields.name,
     species: fields.species,
     breed: fields.breed,
@@ -23,7 +27,7 @@ async function savePet(fields, req) {
     notes: fields.notes || null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-  };
+  });
   let ref;
   if (fields.id) {
     // Update
