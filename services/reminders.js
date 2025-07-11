@@ -1,5 +1,4 @@
-const { getFirestore } = require('firebase-admin/firestore');
-const db = getFirestore();
+const { db } = require('./firebase');
 
 /**
  * Speichert eine Erinnerung als Subdokument unter users/{USER_ID}/pets/{PET_ID}/reminders

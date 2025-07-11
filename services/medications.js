@@ -1,5 +1,4 @@
-const { getFirestore } = require('firebase-admin/firestore');
-const db = getFirestore();
+const { db } = require('./firebase');
 
 /**
  * Speichert ein Medikament als Subdokument unter users/{USER_ID}/pets/{PET_ID}/medications

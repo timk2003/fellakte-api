@@ -1,5 +1,4 @@
-const { getFirestore } = require('firebase-admin/firestore');
-const db = getFirestore();
+const { db } = require('./firebase');
 
 /**
  * Speichert ein Haustier als Subdokument unter users/{USER_ID}/pets

@@ -1,5 +1,4 @@
-const { getFirestore } = require('firebase-admin/firestore');
-const db = getFirestore();
+const { db } = require('./firebase');
 const { analyzeWithGroq } = require('./groq');
 
 async function analyzeFood(data, user) {

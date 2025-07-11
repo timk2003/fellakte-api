@@ -30,4 +30,4 @@ async function insertDocument(data) {
   return { id: ref.id, ...doc.data() };
 }
 
-module.exports = { insertDocument }; 
+module.exports = { insertDocument, db }; 
