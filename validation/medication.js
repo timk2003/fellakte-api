@@ -1,7 +1,7 @@
 const { z } = require('zod');
 
 const medicationSchema = z.object({
-  pet_id: z.string().uuid(),
+  pet_id: z.string(), // UUID-Validierung entfernt, akzeptiert jetzt auch Firestore-IDs
   name: z.string().min(1),
   dosage: z.string().optional(),
   frequency: z.string().optional(),
