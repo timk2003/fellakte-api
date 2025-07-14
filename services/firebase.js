@@ -11,7 +11,9 @@ let app;
 if (!getFirestore.apps || getFirestore.apps.length === 0) {
   let credential;
   if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH && fs.existsSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH)) {
-    credential = cert(require(process.env.FIREBASE_SERVICE_ACCOUNT_PATH));
+    // Service Account JSON sicher laden
+    const serviceAccount = JSON.parse(fs.readFileSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH, 'utf8'));
+    credential = cert(serviceAccount);
   } else {
     credential = applicationDefault();
   }
