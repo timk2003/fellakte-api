@@ -3,7 +3,7 @@ require('dotenv').config();
 const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
-const { getPresignedGetUrl } = require('./services/r2');
+const { getPresignedUrl, getPresignedGetUrl } = require('./services/r2');
 
 // Firebase Login für Test-User
 const { initializeApp } = require('firebase/app');
