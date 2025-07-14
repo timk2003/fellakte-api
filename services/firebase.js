@@ -2,6 +2,10 @@ const { initializeApp, applicationDefault, cert } = require('firebase-admin/app'
 const { getFirestore } = require('firebase-admin/firestore');
 const fs = require('fs');
 
+// Debug-Ausgaben für Service Account
+console.log('Service Account Path:', process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
+console.log('Exists:', fs.existsSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH));
+
 // Initialisierung (nur einmal pro Prozess)
 let app;
 if (!getFirestore.apps || getFirestore.apps.length === 0) {
